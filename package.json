@@ -15,9 +15,7 @@
     "express": "^4.15.4",
     "mongodb": "^2.2.31",
     "request": "^2.82.0",
-    "request-promise-native": "^1.0.5"
-  },
-  "devDependencies": {
+    "request-promise-native": "^1.0.5",
     "nodemon": "^1.12.1"
   },
   "engines": {
