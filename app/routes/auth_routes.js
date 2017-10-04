@@ -1,4 +1,3 @@
-const ObjectID = require('mongodb').ObjectID;
 const bcrypt = require('bcrypt');
 
 module.exports = function(app, db) {
@@ -11,7 +10,8 @@ module.exports = function(app, db) {
 			.findOne({'username':username})
 			.then((result) => {
 				if (result !== null) {
-					res.send({'error' : 'Username already existing'});
+			  		res.status(409)
+					res.send({'message' : 'Username already existing'});
 				} else {
 					const hash = bcrypt.hashSync(password, 8);
 					const user = {
@@ -19,9 +19,15 @@ module.exports = function(app, db) {
 						password: hash
 					};
 					db.collection('users').insertOne(user).then(() => {
-						res.send('user successfully registered');
+						req.session.save();
+						res.status(200);
+						res.json({
+							"authenticated": true,
+							"accessToken": req.sessionID,
+						});
 					}).catch((e) => {
-						res.send({'error' : 'Failed registering user'});
+						res.status(500);
+						res.send({'message' : 'Failed registering user'});
 					});
 				}
 		});
@@ -35,15 +41,20 @@ module.exports = function(app, db) {
 			.findOne({'username':username})
 			.then((result) => {
 				if (result === null) {
-					res.send({'error' : 'User not found'});
+					res.status(401);
+					res.send({'message' : 'User not found'});
 				} else {
 					const hash = result.password;
-					console.log(hash);
 					if (bcrypt.compareSync(password, hash)) {
-						req.session.authenticated = true;
-						res.send('user logged in');
+						req.session.save();
+						res.status(200);
+						res.json({
+							"authenticated": true,
+							"accessToken": req.sessionID,
+						});
 					} else {
-						res.send({'error' : 'Wrong password'});
+						res.status(401);
+						res.send({'message' : 'Wrong password'});
 					}
 					
 				}
@@ -51,7 +62,27 @@ module.exports = function(app, db) {
   	});
 
   	app.get('/auth/logout', (req, res) => {
-  		delete req.session.authenticated;
-  		res.send('user logged out');
+  		const authToken = req.get('x-auth-token');
+  		db.collection('session').findOne({'_id': authToken}, (err, item) => {
+  			if (err) {
+				res.status(500);
+			} else {
+				if (item) {
+			  		db.collection('session').remove({
+			  			'_id': authToken,
+			  		}).then(() => {
+			  			res.status(200);
+			  			res.json({
+			  				message: "User logged out successfully"
+			  			});
+			  		});
+				} else {
+					res.status(403);
+			    	res.json({
+			    		message: "You have to be logged-in in order to log out",
+			    	});
+				}
+			}
+  		});
   	});
 };

@@ -1,6 +1,7 @@
-var ObjectID = require('mongodb').ObjectID;
-var rp = require('request-promise-native');
-var omdbapi = require('../../config/omdbapi.js');
+const ObjectID = require('mongodb').ObjectID;
+const rp = require('request-promise-native');
+const omdbapi = require('../../config/omdbapi.js');
+
 
 module.exports = function(app, db) {
 	/****** MOVIE ******/
@@ -21,22 +22,54 @@ module.exports = function(app, db) {
 	app.delete('/movies/:id', (req, res) => {
 		const id = req.params.id;
 	    const details = { '_id': new ObjectID(id) };
-	    db.collection('movies').remove(details, (err, item) => {
-	      if (err) {
-	        res.send({'error':'An error has occurred'});
-	      } else {
-	        res.send('Movie ' + id + ' deleted!');
-	      }
-	    });
+	    const authToken = req.get('x-auth-token');
+		//PROTECTED ROUTE check if user is logged in
+		db.collection('session').findOne({'_id': authToken}, (err, item) => {
+			if (err) {
+				res.status(500);
+			} else {
+				console.log(item);
+				if (item) {
+					db.collection('movies').remove(details, (err, item) => {
+				      if (err) {
+				        res.send({'error':'An error has occurred'});
+				      } else {
+				        res.send('Movie ' + id + ' deleted!');
+				      }
+				    });
+				} else {
+					res.status(403);
+			    	res.json({
+			    		message: "You need to be authenticated to be able to delete a movie",
+			    	});
+				}
+			}
+		});
 	});
 
 	// CREATE
 	app.post('/movies', (req, res) => {
-		db.collection('movies').insert(req.body, (err, result) => {
-			if (err) { 
-				res.send({ 'error': 'An error has occurred' }); 
+		const authToken = req.get('x-auth-token');
+		//PROTECTED ROUTE check if user is logged in
+		db.collection('session').findOne({'_id': authToken}, (err, item) => {
+			if (err) {
+				res.status(500);
 			} else {
-				res.send(result.ops[0]);
+				console.log(item);
+				if (item) {
+					db.collection('movies').insert(req.body, (err, result) => {
+						if (err) { 
+							res.send({ 'error': 'An error has occurred' }); 
+						} else {
+							res.send(result.ops[0]);
+						}
+					});
+				} else {
+					res.status(403);
+			    	res.json({
+			    		message: "You need to be authenticated to be able to create a movie",
+			    	});
+				}
 			}
 		});
 	});
@@ -45,12 +78,28 @@ module.exports = function(app, db) {
 	app.put('/movies/:id', (req, res) => {
 		const id = req.params.id;
 		const details = { '_id': new ObjectID(id) };
-		db.collection('movies').update(details, req.body, (err, result) => {
+		const authToken = req.get('x-auth-token');
+		//PROTECTED ROUTE check if user is logged in
+		db.collection('session').findOne({'_id': authToken}, (err, item) => {
 			if (err) {
-					res.send({'error':'An error has occurred'});
+				res.status(500);
 			} else {
-					res.send(req.body);
-			} 
+				console.log(item);
+				if (item) {
+					db.collection('movies').update(details, req.body, (err, result) => {
+						if (err) {
+								res.send({'error':'An error has occurred'});
+						} else {
+								res.send(req.body);
+						} 
+					});
+				} else {
+					res.status(403);
+			    	res.json({
+			    		message: "You need to be authenticated to be able to update a movie",
+			    	});
+				}
+			}
 		});
 	});
 
