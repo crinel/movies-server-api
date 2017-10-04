@@ -77,18 +77,24 @@ module.exports = function(app, db) {
 	// UPDATE
 	app.put('/movies/:id', (req, res) => {
 		const id = req.params.id;
-		const details = { '_id': new ObjectID(id) };
+		let details;
+		try {
+			details = { '_id': new ObjectID(id) };
+		} catch(e) {
+			res.status(400)
+			return res.json({'message':'Invalid movie id'});
+		}
 		const authToken = req.get('x-auth-token');
 		//PROTECTED ROUTE check if user is logged in
 		db.collection('session').findOne({'_id': authToken}, (err, item) => {
 			if (err) {
 				res.status(500);
 			} else {
-				console.log(item);
 				if (item) {
-					db.collection('movies').update(details, req.body, (err, result) => {
+					// need to validate movie id
+					db.collection('movies').update(details, { $set : req.body}, (err, result) => {
 						if (err) {
-								res.send({'error':'An error has occurred'});
+								res.send({'message':'An error has occurred'});
 						} else {
 								res.send(req.body);
 						} 
