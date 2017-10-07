@@ -133,8 +133,13 @@ module.exports = function(app, db) {
     };
 
 		const query = req.query;
+		let take = query.take;
+		let skip = query.skip;
+		delete query.take;
+		delete query.skip;
+
 		for (let field in query) {
-			if (!projection.hasOwnProperty(field)) {
+			if (field !== 'take' && field !== 'skip' && !projection.hasOwnProperty(field)) {
 				res.status(400);
 				res.send(`'${field}' does not exist for a movie or is not a searchable field`);
 			}
@@ -172,7 +177,7 @@ module.exports = function(app, db) {
 			if (err) {
 				res.send({'error':'An error has occurred'});
 			} else {
-				res.send(items);
+				res.send(paginate(items, req, take, skip));
 			}
 		});
 	});
@@ -250,4 +255,40 @@ const getAllMoviesDetails = (db, page) => {
     .catch((err) => {
         return Promise.reject({'error':'There was an error with the request from OMDB API'});
     });
+};
+
+const paginate = (items, req, take = 10, skip = 0) => {
+	take = parseInt(take);
+  skip = parseInt(skip);
+
+  const numberOfPages = Math.ceil(items.length / take);
+	const currentPage = skip === 0 ? 1 : skip > items.length - take ? numberOfPages : Math.ceil(skip / take + 1);
+	const results = items.slice(skip, + skip + take);
+
+	// 23 => 3 pages, skip = 20, take = 10
+	// 23 => skip = 15, take = 5 => 5 pages, currentpage = 4
+  let fullUrl = req.protocol + "://" + req.get('host') + req.originalUrl;
+  if (fullUrl.indexOf('take') === -1){
+  	fullUrl = fullUrl.indexOf('?' === -1) ? fullUrl.concat(`?take=${take}`) : fullUrl.concat(`&take=${take}`);
+	}
+	if (fullUrl.indexOf('skip') === -1){
+  	fullUrl = fullUrl.indexOf('?' === -1) ? fullUrl.concat(`?skip=${skip}`) : fullUrl.concat(`&skip=${skip}`);
+	}
+
+  const prev = skip >= take ? fullUrl.replace(`skip=${skip}`, `skip=${skip - take}`) : null;
+  const next = skip < take * (numberOfPages-1) ? fullUrl.replace(`skip=${skip}`, `skip=${skip + take}`) : null;
+
+  return {
+  	pagination: {
+      numberOfPages,
+			currentPage,
+			links: {
+      	self: fullUrl,
+				prev,
+				next
+			}
+    },
+		results
+	}
+
 };
