@@ -111,30 +111,62 @@ module.exports = function(app, db) {
 
 	/****** MOVIE ******/
 	// GET Movies
-	app.get('/movies/', (req, res) => {
-		const id = req.params.id;
-		const cursor = db.collection('movies').find({}).toArray(function(err, items) {
+	app.get('/movies', (req, res) => {
+		const projection = {
+      Title: true,
+      Year: true,
+      Runtime: true,
+      Genre: true,
+      Language: true,
+      Country: true,
+      Poster: true,
+      imdbRating: true,
+      imdbVotes: true,
+      imdbID: true,
+      Type: true
+    };
+
+		const query = req.query;
+		for (let field in query) {
+			if (!projection.hasOwnProperty(field)) {
+				res.status(400);
+				res.send(`'${field}' does not exist for a movie or is not a searchable field`);
+			}
+		}
+
+		if (query.Title) {
+			try {
+				let title = new RegExp(query.Title);
+        query.Title = {
+          $regex: title,
+          $options: 'i'
+        }
+			}
+			catch (e) {
+				res.status(400);
+				res.send('An invalid regular expression was supplied');
+			}
+		}
+
+		if (query.Genre) {
+      try {
+        let genre = new RegExp(query.Genre);
+        query.Genre = {
+          $regex: genre,
+          $options: 'i'
+        }
+      }
+      catch (e) {
+        res.status(400);
+        res.send('An invalid regular expression was supplied');
+      }
+		}
+
+		const cursor = db.collection('movies').find(query, projection).toArray(function(err, items) {
 			if (err) {
 				res.send({'error':'An error has occurred'});
 			} else {
-				const itemsWithoutDetails = items.map(item => {
-					return {
-						_id: item._id,
-						Title: item.Title,
-						Year: item.Year,
-						Runtime: item.Runtime,
-						Genre: item.Genre,
-						Language: item.Language,
-						Country: item.Country,
-						Poster: item.Poster,
-						imdbRating: item.imdbRating,
-						imdbVotes: item.imdbVotes,
-						imdbID: item.imdbID,
-						Type: item.Type
-					};
-				});
-
-				res.send(itemsWithoutDetails);
+				res.send(items);
 			}
 		});
 	});
