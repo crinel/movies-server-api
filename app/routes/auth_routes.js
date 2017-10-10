@@ -11,7 +11,7 @@ module.exports = function(app, db) {
 		const username = req.body.username;
 		const password = req.body.password;
 
-		console.log(username, passwo)
+		console.log(username, password);
 		
 		db.collection('users')
 			.findOne({'username':username})
