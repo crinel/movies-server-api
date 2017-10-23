@@ -1,10 +1,18 @@
 const bcrypt = require('bcrypt');
 
 module.exports = function(app, db) {
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, X-Auth-Token");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    next();
+  });
 
 	app.post('/auth/register', (req, res) => {
 		const username = req.body.username;
 		const password = req.body.password;
+
+		console.log(username, password);
 		
 		db.collection('users')
 			.findOne({'username':username})
