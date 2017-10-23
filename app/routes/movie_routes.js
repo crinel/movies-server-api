@@ -17,17 +17,17 @@ module.exports = function(app, db) {
 		const id = req.params.id;
 		try {
 	    	const details = { '_id': new ObjectID(id) };
+	    	db.collection('movies').findOne(details, (err, item) => {
+		      if (err) {
+		        res.send({'error':'An error has occurred'});
+		      } else {
+		        res.send(item);
+		      }
+		    });
 	    } catch (error) {
 	    	res.status(400);
 	    	res.json({'error' : 'Invalid movie ID'});
 	    }
-	    db.collection('movies').findOne(details, (err, item) => {
-	      if (err) {
-	        res.send({'error':'An error has occurred'});
-	      } else {
-	        res.send(item);
-	      }
-	    });
 	});
 
 	// DELETE
@@ -103,40 +103,40 @@ module.exports = function(app, db) {
 		}
 		try {
 			details = { '_id': new ObjectID(id) };
+			const authToken = req.get('x-auth-token');
+			//PROTECTED ROUTE check if user is logged in
+			db.collection('session').findOne({'_id': authToken}, (err, item) => {
+				if (err) {
+					res.status(500);
+				} else {
+					if (item) {
+						// need to validate movie id
+						db.collection('movies').update(details, { $set : req.body}, (err, response) => {
+							if (err) {
+									res.status(500);
+									res.send({'message':'An error has occurred'});
+							} else {
+									if (response.result.nModified == 0) {
+										res.status(400);
+										res.json({'message': 'Nothing to update'})
+									} else {
+										res.status(200);
+										res.json(req.body);
+									}
+							} 
+						});
+					} else {
+						res.status(403);
+				    	res.json({
+				    		message: "You need to be authenticated to be able to update a movie",
+				    	});
+					}
+				}
+			});
 		} catch(e) {
 			res.status(400)
 			return res.json({'message':'Invalid movie id'});
 		}
-		const authToken = req.get('x-auth-token');
-		//PROTECTED ROUTE check if user is logged in
-		db.collection('session').findOne({'_id': authToken}, (err, item) => {
-			if (err) {
-				res.status(500);
-			} else {
-				if (item) {
-					// need to validate movie id
-					db.collection('movies').update(details, { $set : req.body}, (err, response) => {
-						if (err) {
-								res.status(500);
-								res.send({'message':'An error has occurred'});
-						} else {
-								if (response.result.nModified == 0) {
-									res.status(400);
-									res.json({'message': 'Nothing to update'})
-								} else {
-									res.status(200);
-									res.json(req.body);
-								}
-						} 
-					});
-				} else {
-					res.status(403);
-			    	res.json({
-			    		message: "You need to be authenticated to be able to update a movie",
-			    	});
-				}
-			}
-		});
 	});
 
 	/****** MOVIE ******/
