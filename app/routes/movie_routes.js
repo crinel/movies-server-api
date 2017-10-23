@@ -8,7 +8,12 @@ module.exports = function(app, db) {
 	// GET
 	app.get('/movies/:id', (req, res) => {
 		const id = req.params.id;
-	    const details = { '_id': new ObjectID(id) };
+		try {
+	    	const details = { '_id': new ObjectID(id) };
+	    } catch (error) {
+	    	res.status(400);
+	    	res.json({'error' : 'Invalid movie ID'});
+	    }
 	    db.collection('movies').findOne(details, (err, item) => {
 	      if (err) {
 	        res.send({'error':'An error has occurred'});
@@ -28,7 +33,6 @@ module.exports = function(app, db) {
 			if (err) {
 				res.status(500);
 			} else {
-				console.log(item);
 				if (item) {
 					db.collection('movies').remove(details, (err, item) => {
 				      if (err) {
@@ -50,6 +54,12 @@ module.exports = function(app, db) {
 	// CREATE
 	app.post('/movies', (req, res) => {
 		const authToken = req.get('x-auth-token');
+		if (req.body && req.body._id) {
+			res.status(400);
+			res.json({'error': 'You should not provide an _id for a new movie, it will be automatically generated on Server Side'});
+			return;
+			
+		}
 		//PROTECTED ROUTE check if user is logged in
 		db.collection('session').findOne({'_id': authToken}, (err, item) => {
 			if (err) {
@@ -78,6 +88,12 @@ module.exports = function(app, db) {
 	app.put('/movies/:id', (req, res) => {
 		const id = req.params.id;
 		let details;
+		if (req.body && req.body._id) {
+			res.status(400);
+			res.json({'error': 'You should not update _id property on movie object'});
+			return;
+			
+		}
 		try {
 			details = { '_id': new ObjectID(id) };
 		} catch(e) {
@@ -92,11 +108,18 @@ module.exports = function(app, db) {
 			} else {
 				if (item) {
 					// need to validate movie id
-					db.collection('movies').update(details, { $set : req.body}, (err, result) => {
+					db.collection('movies').update(details, { $set : req.body}, (err, response) => {
 						if (err) {
+								res.status(500);
 								res.send({'message':'An error has occurred'});
 						} else {
-								res.send(req.body);
+								if (response.result.nModified == 0) {
+									res.status(400);
+									res.json({'message': 'Nothing to update'})
+								} else {
+									res.status(200);
+									res.json(req.body);
+								}
 						} 
 					});
 				} else {
