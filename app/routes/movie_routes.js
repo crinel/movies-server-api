@@ -72,7 +72,6 @@ module.exports = function(app, db) {
 			if (err) {
 				res.status(500);
 			} else {
-				console.log(item);
 				if (item) {
 					db.collection('movies').insert(req.body, (err, result) => {
 						if (err) { 
@@ -213,7 +212,6 @@ module.exports = function(app, db) {
       if (err) {
         res.status(500);
       } else {
-        console.log(item);
         if (item) {
           db.collection('movies').remove({}, (err, item) => {
             if (err) {
@@ -269,8 +267,6 @@ const getAllMoviesDetails = (db, page) => {
         return rp(`${omdbapi.baseurl}&i=${movie.imdbID}`);
       });
 
-      console.log(detailsPromises.length);
-
 			return Promise.all(detailsPromises)
         .catch((err) => {
           return Promise.reject({'error':'There was an error with the details request from OMDB API'});
@@ -293,10 +289,11 @@ const paginate = (items, req, take = 10, skip = 0) => {
 	// 23 => skip = 15, take = 5 => 5 pages, currentpage = 4
   let fullUrl = req.protocol + "://" + req.get('host') + req.originalUrl;
   if (fullUrl.indexOf('take') === -1){
-  	fullUrl = fullUrl.indexOf('?' === -1) ? fullUrl.concat(`?take=${take}`) : fullUrl.concat(`&take=${take}`);
+  	fullUrl = fullUrl.indexOf('?') === -1 ? fullUrl.concat(`?take=${take}`) : fullUrl.concat(`&take=${take}`);
 	}
+
 	if (fullUrl.indexOf('skip') === -1){
-  	fullUrl = fullUrl.indexOf('?' === -1) ? fullUrl.concat(`?skip=${skip}`) : fullUrl.concat(`&skip=${skip}`);
+  	fullUrl = fullUrl.indexOf('?') === -1 ? fullUrl.concat(`?skip=${skip}`) : fullUrl.concat(`&skip=${skip}`);
 	}
 
   const prev = skip >= take ? fullUrl.replace(`skip=${skip}`, `skip=${skip - take}`) : null;
