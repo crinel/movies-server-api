@@ -245,21 +245,30 @@ module.exports = function(app, db) {
 												return acc.concat(arrayOfMovies);
 											}, [])
 											.map((movieString) => JSON.parse(movieString));
-      db.collection('movies').insertMany(movies)
-        .then((result) => {
-          console.log('success',result.ops.length);
-          res.send(result.ops);
-        })
-        .catch((err) => {
-          console.log('error');
-          res.send({ 'error': 'An error has occurred when populating movies' });
-        });
+			db.collection('movies').remove({}).then(() => {
+				 db.collection('movies').insertMany(movies)
+	        .then((result) => {
+	          console.log('success',result.ops.length);
+	          res.send(result.ops);
+	        })
+	        .catch((err) => {
+	          console.log('error');
+	          res.send({ 'error': 'An error has occurred when populating movies' });
+	        });
+				
+			}).catch((err) => {
+					console.log('Error removing items from DB', err);
+					res.status(500).json({'error': err});
+			});
+		}).catch((err) => {
+			res.status(500).json({'error': 'Not good :('})
+			console.log(err);
 		})
 	});
 };
 
 const getAllMoviesDetails = (db, page) => {
-  return rp(`${omdbapi.baseurl}&s=a&page=${page}`)
+  return rp(`${omdbapi.baseurl}&s=Batman&page=${page}`)
     .then((response) => {
       const movies = JSON.parse(response).Search;
 
@@ -269,10 +278,12 @@ const getAllMoviesDetails = (db, page) => {
 
 			return Promise.all(detailsPromises)
         .catch((err) => {
+        	console.log(err);
           return Promise.reject({'error':'There was an error with the details request from OMDB API'});
         });
     })
     .catch((err) => {
+    	console.log(err);
         return Promise.reject({'error':'There was an error with the request from OMDB API'});
     });
 };
