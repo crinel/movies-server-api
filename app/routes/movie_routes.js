@@ -287,7 +287,7 @@ const paginate = (items, req, take = 10, skip = 0) => {
 
 	// 23 => 3 pages, skip = 20, take = 10
 	// 23 => skip = 15, take = 5 => 5 pages, currentpage = 4
-  let fullUrl = req.protocol + "://" + req.get('host') + req.originalUrl;
+  let fullUrl = req.headers['x-forwarded-proto'] + "://" + req.get('host') + req.originalUrl;
   if (fullUrl.indexOf('take') === -1){
   	fullUrl = fullUrl.indexOf('?') === -1 ? fullUrl.concat(`?take=${take}`) : fullUrl.concat(`&take=${take}`);
 	}
