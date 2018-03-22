@@ -165,6 +165,7 @@ module.exports = function(app, db) {
 			if (field !== 'take' && field !== 'skip' && !projection.hasOwnProperty(field)) {
 				res.status(400);
 				res.send(`'${field}' does not exist for a movie or is not a searchable field`);
+				return;
 			}
 		}
 
