@@ -1,4 +1,4 @@
 module.exports = {
-    baseurl: 'http://www.omdbapi.com/?apikey=1e2ebaf7',
+    baseurl: 'http://www.omdbapi.com/?apikey=2ecc64a4',
     noOfMovies: 100,
 };
