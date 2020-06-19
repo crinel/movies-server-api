@@ -40,7 +40,14 @@ module.exports = function(app, db) {
 				}
 		});
   	});
-	
+
+	app.post('/auth/empty', (req, res) => {
+
+		console.log("users collection ", db.collection('users'));
+		console.log("session collection ", db.collection('session'));
+
+  	});
+
 	app.post('/auth/login', (req, res) => {
 		const username = req.body.username;
 		const password = req.body.password;
