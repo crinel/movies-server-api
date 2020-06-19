@@ -69,17 +69,14 @@ module.exports = function(app, db) {
 		});
   	});
 
-	app.get('/auth/allusers', (req, res) => {
-		db.collection('users').find({}).then((usersRes)=>{
-			db.collection('session').find({}).then((sessionsRes)=>{
-				res.status(200);
-				res.json({
-					"users": usersRes,
-					"session": sessionsRes,
-				});
-			});
-		})
-	});
+	// app.get('/allusers', (req, res) => {
+	// 	db.collection('users').count({}).then((usersCount)=>{
+	// 			db.collection('users').findOneAndDelete({}).then((usersRes)=>{
+	// 				res.status(200);
+	// 				res.json({"usersCount": usersCount, "users": usersRes});
+	// 			})
+	// 	})
+	// });
 
   	app.get('/auth/logout', (req, res) => {
   		const authToken = req.get('x-auth-token');
