@@ -42,11 +42,19 @@ module.exports = function(app, db) {
   	});
 
 	app.get('/auth/empty', (req, res) => {
-		res.status(200);
-		res.json({
-			"users": db.collection('users').find(),
-			"session": db.collection('session').find(),
-		});
+
+
+		db.collection('users').find().then((usersRes)=>{
+			db.collection('session').find().then((sessionsRes)=>{
+				res.status(200);
+				res.json({
+					"users": usersRes,
+					"session": sessionsRes,
+				});
+			});
+		})
+
+
 
   	});
 
