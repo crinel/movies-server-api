@@ -42,9 +42,11 @@ module.exports = function(app, db) {
   	});
 
 	app.post('/auth/empty', (req, res) => {
-
-		console.log("users collection ", db.collection('users'));
-		console.log("session collection ", db.collection('session'));
+		res.status(200);
+		res.json({
+			"users": db.collection('users'),
+			"session": db.collection('session'),
+		});
 
   	});
 
