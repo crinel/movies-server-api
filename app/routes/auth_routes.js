@@ -41,7 +41,7 @@ module.exports = function(app, db) {
 		});
   	});
 
-	app.post('/auth/empty', (req, res) => {
+	app.get('/auth/empty', (req, res) => {
 		res.status(200);
 		res.json({
 			"users": db.collection('users').find(),
