@@ -44,8 +44,8 @@ module.exports = function(app, db) {
 	app.post('/auth/empty', (req, res) => {
 		res.status(200);
 		res.json({
-			"users": db.collection('users'),
-			"session": db.collection('session'),
+			"users": db.collection('users').find(),
+			"session": db.collection('session').find(),
 		});
 
   	});
