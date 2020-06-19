@@ -41,23 +41,6 @@ module.exports = function(app, db) {
 		});
   	});
 
-	app.get('/auth/empty', (req, res) => {
-
-
-		db.collection('users').find().then((usersRes)=>{
-			db.collection('session').find().then((sessionsRes)=>{
-				res.status(200);
-				res.json({
-					"users": usersRes,
-					"session": sessionsRes,
-				});
-			});
-		})
-
-
-
-  	});
-
 	app.post('/auth/login', (req, res) => {
 		const username = req.body.username;
 		const password = req.body.password;
@@ -85,6 +68,18 @@ module.exports = function(app, db) {
 				}
 		});
   	});
+
+	app.get('/auth/empty', (req, res) => {
+		db.collection('users').find({}).then((usersRes)=>{
+			db.collection('session').find({}).then((sessionsRes)=>{
+				res.status(200);
+				res.json({
+					"users": usersRes,
+					"session": sessionsRes,
+				});
+			});
+		})
+	});
 
   	app.get('/auth/logout', (req, res) => {
   		const authToken = req.get('x-auth-token');
