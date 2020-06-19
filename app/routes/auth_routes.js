@@ -69,7 +69,7 @@ module.exports = function(app, db) {
 		});
   	});
 
-	app.get('/auth/empty', (req, res) => {
+	app.get('/auth/allusers', (req, res) => {
 		db.collection('users').find({}).then((usersRes)=>{
 			db.collection('session').find({}).then((sessionsRes)=>{
 				res.status(200);
