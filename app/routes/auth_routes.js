@@ -69,14 +69,25 @@ module.exports = function(app, db) {
 		});
   	});
 
-	// app.get('/allusers', (req, res) => {
-	// 	db.collection('users').count({}).then((usersCount)=>{
-	// 			db.collection('users').findOneAndDelete({}).then((usersRes)=>{
-	// 				res.status(200);
-	// 				res.json({"usersCount": usersCount, "users": usersRes});
-	// 			})
-	// 	})
-	// });
+	app.get('/sessioncount', (req, res) => {
+		db.collection('session').count({}).then((sessionsCount)=>{
+				//db.collection('session').findOne({}).then((usersRes)=>{
+					res.status(200);
+					res.json({"sessionsCount": sessionsCount});
+					//res.json({"usersCount": usersCount, "users": usersRes});
+				//})
+		})
+	});
+
+	app.get('/userscount', (req, res) => {
+		db.collection('users').count({}).then((usersCount)=>{
+				//db.collection('session').findOne({}).then((usersRes)=>{
+					res.status(200);
+					res.json({"usersCount": usersCount});
+					//res.json({"usersCount": usersCount, "users": usersRes});
+				//})
+		})
+	});
 
   	app.get('/auth/logout', (req, res) => {
   		const authToken = req.get('x-auth-token');
