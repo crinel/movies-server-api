@@ -246,16 +246,16 @@ module.exports = function(app, db) {
 												return acc.concat(arrayOfMovies);
 											}, [])
 											.map((movieString) => JSON.parse(movieString));
-			db.collection('movies').remove({}).then(() => {
-				 db.collection('movies').insertMany(movies)
-	        .then((result) => {
-	          console.log('success',result.ops.length);
-	          res.send(result.ops);
-	        })
-	        .catch((err) => {
-	          console.log('error');
-	          res.send({ 'error': 'An error has occurred when populating movies' });
-	        });
+			db.collection('movies').deleteMany({}).then(() => {
+
+				 db.collection('movies').insertMany(movies).then((result) => {
+					  console.log('success',result.ops.length);
+					  res.send(result.ops);
+				})
+				.catch((err) => {
+				  console.log('error');
+				  res.send({ 'error': 'An error has occurred when populating movies' });
+				});
 				
 			}).catch((err) => {
 					console.log('Error removing items from DB', err);
