@@ -73,7 +73,7 @@ module.exports = function(app, db) {
 				res.status(500);
 			} else {
 				if (item) {
-					db.collection('movies').insert(req.body, (err, result) => {
+					db.collection('movies').insertOne(req.body, (err, result) => {
 						if (err) { 
 							res.send({ 'error': 'An error has occurred' }); 
 						} else {
@@ -110,7 +110,7 @@ module.exports = function(app, db) {
 				} else {
 					if (item) {
 						// need to validate movie id
-						db.collection('movies').update(details, { $set : req.body}, (err, response) => {
+						db.collection('movies').updateOne(details, { $set : req.body}, (err, response) => {
 							if (err) {
 									res.status(500);
 									res.send({'message':'An error has occurred'});
